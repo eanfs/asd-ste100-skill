@@ -4,6 +4,8 @@ A Claude Code skill that rewrites dense, ambiguous English into [ASD-STE100 Simp
 
 This skill repurposes that same discipline for a different reader: an **AI agent** parsing another agent's output, a tool description, an error message, or an inter-agent instruction, with no human in the loop to resolve ambiguity.
 
+Chinese output is also supported through a STE-inspired adaptation. ASD-STE100 itself specifies English. This skill does not certify Chinese text against the official standard.
+
 ## Why STE, and Why for Agents
 
 STE exists because a misread instruction on an aircraft can kill people, and the intended readers were often not native English speakers with no author to call for clarification. The standard's fix: one meaning per word, active voice, simple tenses, one instruction per sentence, short sentences, no dropped words.
@@ -22,7 +24,7 @@ More examples, including illustrations of the official STE rules themselves, in 
 ## What This Skill Does
 
 1. Picks a mode. **Strict** covers procedures, error messages, and tool descriptions. **STE-flavored** covers READMEs, PR descriptions, and explanatory prose. STE-flavored keeps the sentence discipline but not the fixed-vocabulary lockdown.
-2. Reads the input English text for meaning.
+2. Selects the output language and reads the input for meaning. Chinese uses its own adaptation instead of English grammar and word-count rules.
 3. Flags every rule violation sentence-by-sentence: ambiguous word choice, present-perfect/complex tense, passive voice with an unclear actor, multi-instruction sentences, oversized noun clusters, dropped words, sentences over length, phrasal verbs, nominalized actions, semicolons, hedge stacks, and marketing adjectives.
 4. Rewrites each flagged sentence — without dropping any fact, condition, or scope qualifier from the original. If a shorter phrasing would lose required precision, it keeps the longer phrasing and flags the trade-off instead of silently simplifying.
 5. Outputs the rewritten text on its own — no preamble, no mode announcement, no change summary — plus a one-line `Kept as-is:` note when it deliberately left something unsimplified.
@@ -69,7 +71,7 @@ This clones the repo into `~/.claude/skills/`, making the skill available in eve
 
 ## Usage
 
-Trigger with a request to simplify or clarify English text:
+Trigger with a request to simplify or clarify English or Chinese text:
 
 ```
 Disambiguate this tool description
@@ -81,9 +83,19 @@ Or paste text and ask Claude to "disambiguate this" / "apply STE100 to this" / "
 
 You get the rewritten text back and nothing else. To see which rules were applied, add "show the diff" or "explain the changes" to the request.
 
+## 中文输出
+
+直接请求“按 ASD-STE100 的原则输出中文”或“用中文改写以下技术说明”。默认保留原文语言。新写内容默认使用对话语言。只有明确要求翻译时才切换语言。
+
+中文适配要求短句、单句单指令、明确执行者、条件在前和术语一致。必须保留要求强度、不确定性、时间状态、数字、单位及代码字面值。英文的 20/25 词上限不等于中文的字数上限。
+
+默认只输出正文。需要解释时，请加上“列出规则和前后对照”。中文规则见 [SKILL.md](SKILL.md#中文受控表达)，示例见 [before-after.md](examples/before-after.md#part-3--中文适配示例)。
+
+`scripts/ste-lint.py` 仍是英文检查器。中文由模型或人工审查，零违规不代表中文合规。本次更新不增加中文自动校验功能。
+
 ## Scope
 
-Built for: agent-to-agent messages, tool/function descriptions, error messages, system prompts, inter-agent instructions — any English text a machine or non-native reader has to parse without a human to ask.
+Built for: agent-to-agent messages, tool/function descriptions, error messages, system prompts, and technical instructions in English or Chinese. English uses STE-inspired rules. Chinese uses the documented adaptation.
 
 Not built for: creative writing, marketing copy, or anything where voice and nuance are the point — STE is deliberately flat and literal by design.
 

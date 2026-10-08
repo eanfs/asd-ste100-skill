@@ -90,3 +90,52 @@ Flavored mode kept the explanatory rhythm and did not force one fixed term per c
 ## How to Read These Examples
 
 Part 1 shows the actual rules this skill is built on. Part 2 shows the transfer: the same discipline — one meaning per word, active voice, simple tense, one instruction per sentence, explicit conditions instead of buried subordinate clauses — makes machine-to-machine and cross-language text safer to parse, not just aircraft manuals.
+
+## Part 3 — 中文适配示例
+
+以下示例采用本项目的中文受控表达规则，不表示符合官方 ASD-STE100。
+
+### 条件、操作与禁止
+
+**原文：**
+> 如果请求超时，客户端应该对日志进行检查并联系管理员，但不得重试该请求。
+
+**改写：**
+> 如果请求超时：
+> 1. 客户端应该检查日志。
+> 2. 客户端应该联系管理员。
+> 3. 客户端不得重试该请求。
+
+保留共享条件。“应该”仍是建议，“不得”仍是禁止。没有新增操作。
+
+### 不确定性、时间状态与字面值
+
+**原文：**
+> 任务可能已经完成，但是结果尚未写入 `/tmp/result.json`，因此现在不应删除 `job_id` 对应的临时目录。
+
+**改写：**
+> 任务可能已经完成。结果尚未写入 `/tmp/result.json`。因此，现在不应删除 `job_id` 对应的临时目录。
+
+不把推测改成事实，不删除“已经”“尚未”，不改写路径和标识符。
+
+### 必要条件与数值
+
+**原文：**
+> 仅当温度低于 40 °C 且电源已断开时，操作员才可以对检修盖进行拆卸。
+
+**改写：**
+> 仅当温度低于 40 °C 且电源已断开时，操作员才可以拆卸检修盖。
+
+保留“仅当”“且”“低于”和许可强度。不能改成“温度不高于 40 °C”。
+
+### 无法消除的指代歧义
+
+**原文：**
+> 服务通知客户端后，它会删除缓存。
+
+**输出：**
+> 服务通知客户端后，它会删除缓存。
+>
+> 保留原文：“它”可能指服务或客户端，原文未明确删除缓存的执行者。
+
+不能猜测执行者，也不能为了句子更短而删除事件顺序。

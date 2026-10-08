@@ -49,6 +49,12 @@ ASD-STE100 is a controlled natural language, first released in 1986 (as AECMA Do
 
 STE was designed to eliminate ambiguity for a reader who cannot ask a follow-up question — a technician on a tarmac, working from a manual, with no author to call. An AI agent parsing another agent's output, a tool description, or a system message is in the same position: no back-channel to resolve "does this passive-voice sentence mean the caller does X, or the callee does X?" The same rule set that protects an airline mechanic from a misread torque spec protects a downstream agent from a misread instruction.
 
+## Chinese Adaptation Boundary
+
+ASD-STE100 is an English-language standard. The Chinese rules in `SKILL.md` are this project's adaptation of its clarity principles, not official ASD rules or an approved Chinese dictionary.
+
+The adaptation retains one action per sentence, explicit conditions, consistent terminology, and preservation of meaning. English word limits, verb forms, articles, and noun-cluster counts do not map directly to Chinese. Chinese review must check modality, time and state markers, logical scope, and technical literals. The bundled English linter cannot validate these Chinese rules.
+
 ## Sources
 
 - [ASD-STE100 official site](https://www.asd-ste100.org/)
