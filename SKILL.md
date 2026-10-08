@@ -1,7 +1,7 @@
 ---
 name: asd-ste100
-description: "Use when English text must be parsed without a human to resolve ambiguity — tool descriptions, error messages, inter-agent instructions, system prompts, status reports — and misreading has a real cost, or when text reads as dense, hedged, or easy to misparse. Triggers: disambiguate, STE100 rewrite, apply Simplified Technical English, plain-language rewrite, controlled-language rewrite, rewrite so an agent cannot misread this. Not for creative or marketing copy."
-version: 0.4.0
+description: "Use when writing or rewriting English or Chinese technical text whose ambiguity has a real cost: tool descriptions, error messages, agent instructions, system prompts, and status reports. Also use for dense prose, STE100 rewrites, 中文技术写作, 中文消歧, or 按 STE 原则输出中文. Not for creative or marketing copy."
+version: 0.5.0
 ---
 
 # Simplified Technical English (ASD-STE100)
@@ -19,6 +19,27 @@ This skill borrows that same discipline for a different reader: an **AI agent or
 
 This skill is not for creative or marketing copy — STE is deliberately flat and literal. Do not apply it to text where voice, nuance, or persuasion is the point.
 
+## Language Selection and Chinese Adaptation
+
+Use the language the user requests. Otherwise preserve the source language for rewrites, or use the conversation language for new content. Do not translate Chinese into English merely to apply this skill. Preserve code, identifiers, paths, commands, API names, and literal UI labels exactly.
+
+For Chinese output, use **中文受控表达（STE 原则适配）** below instead of the English-specific Core Rewrite Rules and Scan Checklist. Both modes still select rigor by text type. English word counts, dictionary, tense, article, phrasal-verb, and noun-cluster restrictions do not apply to Chinese. ASD-STE100 specifies English. Never claim official compliance for Chinese. Explain this boundary when asked, not as a preamble to every rewrite.
+
+### 中文受控表达
+
+1. **一句一个动作或判断。** 多个操作分句。三个及以上步骤用编号列表，按执行顺序排列。不要把英文 20/25 词上限换成汉字上限，也不要用空格分词计算中文句长。
+2. **明确执行者和对象。** 优先用“客户端发送请求”。面向读者的操作可以写“打开配置文件”。只有指代唯一时才用“它”“该项”。原文未说明执行者时，不得猜测。
+3. **条件在前，范围不变。** 多个步骤共享条件时，先写条件，再列步骤。保留“仅当”“且”“或”、例外和否定范围。不得将必要条件改成充分条件。
+4. **同一概念使用同一术语。** 不为避免重复而轮换“任务”“作业”“流程”。先确认含义相同，再统一名称。不同概念保留区别。必要时首次注明中文术语与英文名称的对应关系。
+5. **直接写动作，删除空话。** “对配置进行检查”改为“检查配置”。删除无信息的引导语。将比喻、黑话和无依据的宣传词改为明确表述，不补造数据或机制。
+6. **保留要求强度和不确定性。** “必须”“应该”“可以”“不得”“不必”不可互换。“可能失败”不能改为“失败”。不得将建议改成命令。区分许可与可能性。
+7. **保留时间和状态。** “已”“正在”“尚未”“将”“可能已经”等有信息时必须保留。不得套用英文简单时态规则删除这些信息。
+8. **保留技术约束。** 保留数字、单位、比较符号、超时、范围、前置条件和安全警告。代码及字面值保持原样。不得新增重试、检查或其他操作来让改写显得完整。
+9. **结构简单，标点明确。** 每段一个主题，最多六句。正文不用中英文分号串联信息，改用句号或列表。代码、命令和必须逐字保留的引用不受此标点规则影响。拆开多层“的”修饰，但保留固定技术名称。
+
+改写后核对事实、执行者、对象、条件、否定、要求强度、可能性、时间状态、数值和字面值。无法消除的歧义不得靠猜测解决。保留歧义，并用“保留原文：”说明缺失信息。新写内容也使用这些规则，区分已知事实与推测。
+
+中文需要人工或模型审查。`scripts/ste-lint.py` 是英文启发式检查器，不检查中文断句、句长、术语一致性或情态保持。零违规不能证明中文符合本节规则。混合文本只能对独立的英文段落使用英文检查器，中文部分需单独审查。
 ## Two Modes
 
 Pick a mode before rewriting. If the user does not say which, infer it from the text type. Keep the choice internal unless the user asks for the rule table (see Output Format).
@@ -86,7 +107,7 @@ These six habits cover most of what makes machine-written English hard to parse.
 
 ## Process
 
-1. Pick the mode (Strict or STE-flavored). Say which only when the user asked for the rule table — see Output Format.
+1. Select the output language, then the mode (Strict or STE-flavored). For Chinese, use the Chinese adaptation above instead of English-specific rules or linter checks in the steps below. Keep the choice internal unless the user requests the rule table.
 2. Read the input text once for meaning — do not start rewriting before you understand what it must still say afterward.
 3. Walk it sentence by sentence. Flag every rule violation from the Core Rewrite Rules tables and every habit from the Scan Checklist. In STE-flavored mode, flag the lexical rules but do not enforce them. For a mechanical first pass over the structural rules, run `scripts/ste-lint.py` (stdin or file args, `--json` for structured output); it checks semicolons, sentence length, phrasal verbs, nominalization, marketing adjectives, synonym rotation, dangling-conjunction in supported list items, passive voice, and compound tenses, and by design never flags hedges or modality. `--baseline N` tolerates N hard violations (for adopting on existing docs); `--disable rule1,rule2` silences named rules.
 4. Rewrite each flagged sentence to fix the violation while preserving the original meaning exactly. If a rewrite would drop necessary precision (a safety condition, a scope qualifier, a number), keep the longer phrasing and flag it instead of silently simplifying.
@@ -99,7 +120,7 @@ These six habits cover most of what makes machine-written English hard to parse.
 
 **Default: the rewritten text, and nothing else.** Most callers want a result they can paste straight into a tool description, an error string, or a prompt. Print the simplified text on its own. Do not add a preamble about this skill, a mode announcement, a violation count, a summary of what changed, a rule table, or a closing offer to explain further.
 
-The one permitted addition: if step 4 kept a longer phrasing on purpose, add a single line after the text, prefixed `Kept as-is:`, naming the phrase and the precision that would have been lost. Omit the line when there is nothing to report.
+The one permitted addition: if a phrase must stay to preserve precision or unresolved ambiguity, add a single line prefixed `Kept as-is:` (Chinese: `保留原文：`), naming the phrase and reason. Omit the line when there is nothing to report.
 
 **On request: the rule table.** When the user asks to see the reasoning — "show the diff", "which rules did it break", "explain the changes", "before/after" — output this table instead:
 
@@ -113,11 +134,12 @@ Mode: Strict. 7 violations found.
 ```
 
 Follow the table with a one-line note on anything you deliberately did **not** simplify, and why (usually: simplifying would lose required precision).
+Localize table headers and notes to the output language. For Chinese, use `规则 | 原文 | 改写` and label the mode `Strict（中文适配）` or `STE-flavored（中文适配）`. Do not describe Chinese findings as violations of official English rules.
 
 ## Boundaries
 
 **Will:**
-- Rewrite ambiguous or dense English into short, single-meaning, active-voice sentences.
+- Write or rewrite English and Chinese technical content using the applicable language rules.
 - Return the rewritten text alone by default, and name the rules it applied when the user asks.
 - Preserve every fact, condition, and scope qualifier in the original.
 - Preserve the strength of every hedge, and add no claim the source did not make.
